@@ -1,47 +1,48 @@
 const router = require("express").Router();
-const mongoose = require("mongoose");
-const jwt = require("jsonwebtoken");
-const User = mongoose.model("User");
+const authController = require("../controller/auth");
+const { body } = require("express-validator");
 
-router.post("/sign-in", async (req, res, next) => {
-  try {
-    const { email, password } = req.body;
-    const user = await User.findOne({ email });
-    if (!user) {
-      throw new Error("Sorry invalid email or password");
-    }
-    const match = await user.comparePassword(password);
-    if (!match) {
-      throw new Error("Sorry invalid email or password");
-    }
-    const token = jwt.sign(
-      { userId: user._id },
-      process.env.MY_SECRET_WEB_TOKEN_KEY
-    );
-    res.send({ success: true, token });
-  } catch (err) {
-    const error = new Error(err.message);
-    return next(error);
-  }
-});
-router.post("/sign-up", async (req, res, next) => {
-  try {
-    const { email, password } = req.body;
-    const user = await User.findOne({ email });
-    if (user) {
-      throw new Error("Sorry but the email is already taken");
-    }
-    const newUser = new User({ email, password });
-    await newUser.save();
-    const token = jwt.sign(
-      { userId: newUser._id },
-      `${process.env.MY_SECRET_WEB_TOKEN_KEY}`
-    );
-    res.send({ success: true, token });
-  } catch (err) {
-    const error = new Error(err.message);
-    return next(error);
-  }
-});
+// POST --> SIGN IN
+router.post(
+  "/sign-in",
+  [
+    body("email")
+      .isEmail()
+      .normalizeEmail()
+      .withMessage("Please Provide valid email"),
+    body("password").isLength({ min: 5 }).trim(),
+  ],
+  authController.userSignIn
+);
+
+// POST --> SING UP
+router.post(
+  "/sign-up",
+  [
+    body("email")
+      .isEmail()
+      .normalizeEmail()
+      .withMessage("Please Provide valid email"),
+    body("password").isLength({ ming: 5 }).trim(),
+  ],
+  authController.userSignUp
+);
+
+// POST --> SIGN UP (doctor)
+router.post(
+  "/doctor/sign-up",
+  [
+    body("email").isEmail().normalizeEmail(),
+    body("password").isLength({ min: 5 }).trim(),
+    body('key').isLength({min:10,max:10}).withMessage("Invalid identifier"),
+    body("name").not().isEmpty(),
+    body('availability').not().isEmpty(),
+    body('speciality').not().isEmpty()
+  ],
+  authController.doctorSignUp
+);
+
+//POST ---> SIGN IN (doctor)
+router.post("/doctor/sign-in");
 
 module.exports = router;

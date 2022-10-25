@@ -6,20 +6,29 @@ const bodyParser = require("body-parser");
 const authRoute = require("./src/routes/authRoute");
 const homeRoute = require("./src/routes/homeRoute");
 const app = express();
+const cors = require("cors");
+
+//
+require("dotenv").config();
+
+app.use(cors());
 
 app.use(bodyParser.json());
 
 app.use(authRoute);
-app.use(homeRoute);
+// app.use(homeRoute);
 
 app.use((error, req, res, next) => {
-  res.send({ success: false, error: error.message });
+  console.log("error",error);
+  const status = error.statusCode || 500;
+  const message = error.message;
+  res.status(status).json({ message : message });
 });
 
 // creating a connection functions
 const connect = async () => {
   try {
-    await mongoose.connect(process.env.MONGOOSE_SECRET_KEY);
+    await mongoose.connect(process.env.MONGO_DB_SECRET_KEY.toString());
     app.listen(process.env.PORT, () => {
       console.log("Started");
     });
