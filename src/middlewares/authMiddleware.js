@@ -10,6 +10,8 @@ module.exports = (req, res, next) => {
     }
     const token = authorization.replace("Bearer ", "");
 
+    if (!token) throw new Error('Not authenticated')
+
     jwt.verify(
       token,
       `${process.env.MY_SECRET_WEB_TOKEN_KEY}`,

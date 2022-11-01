@@ -47,31 +47,41 @@ const DoctorSchema = new mongoose.Schema({
     required: true,
     trim: true,
   },
+  appointments: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Appointment",
+    },
+  ],
+  reviews: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Review",
+    },
+  ],
 });
 
-DoctorSchema.pre
-  ("save",
-  function (next) {
-    if (!this) return next("Sorry something went Wrong");
-    if (!this.isModified("password")) {
-      // encrypt only when password is changed or created for the first time
-      return next();
-    }
+DoctorSchema.pre("save", function (next) {
+  if (!this) return next("Sorry something went Wrong");
+  if (!this.isModified("password")) {
+    // encrypt only when password is changed or created for the first time
+    return next();
+  }
 
-    // passwrod encryption
-    bcrypt.genSalt(10, (err, salt) => {
+  // passwrod encryption
+  bcrypt.genSalt(10, (err, salt) => {
+    if (err) {
+      return next("Sorry something went Wrong");
+    }
+    bcrypt.hash(this.password, salt, (err, hash) => {
       if (err) {
         return next("Sorry something went Wrong");
       }
-      bcrypt.hash(this.password, salt, (err, hash) => {
-        if (err) {
-          return next("Sorry something went Wrong");
-        }
-        this.password = hash;
-        next();
-      });
+      this.password = hash;
+      next();
     });
   });
+});
 
 DoctorSchema.methods.comparePassword = async function (passwordEntered) {
   // compare hashed passwords

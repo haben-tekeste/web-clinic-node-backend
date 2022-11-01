@@ -7,7 +7,13 @@ const patientController = require("../controller/patientController");
 router.get("/appointments", isAuth, patientController.getAppointments);
 
 // GET ----> get a single appointment
-router.get('/appointment/:appointmentId',isAuth)
+router.get('/appointment/:appointmentId',isAuth,patientController.getAppointment)
+
+// GET ---> all doctors
+router.get('/doctors',isAuth,patientController.getDoctors);
+
+// GET ---> profile
+router.get('/profile',isAuth,patientController.getProfile)
 
 // POST --> book an appointment
 router.post('/appointment',isAuth)

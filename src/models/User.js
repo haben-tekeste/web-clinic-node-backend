@@ -17,6 +17,12 @@ const UserSchema = mongoose.Schema({
     required: true,
     trim: true,
   },
+    appointments:[
+        {
+            type: mongoose.Schema.Types.ObjectId,
+            ref:'Appointment'
+        }
+    ]
 });
 
 UserSchema.pre("save", function (next) {
