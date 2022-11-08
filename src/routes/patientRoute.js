@@ -18,6 +18,9 @@ router.get('/profile',isAuth,patientController.getProfile)
 // POST --> book an appointment
 router.post('/appointment',isAuth)
 
+//UPDATE  --> profile
+router.put('/profile',isAuth,patientController.updateProfile)
+
 
 
 module.exports = router;
