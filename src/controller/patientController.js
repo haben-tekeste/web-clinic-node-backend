@@ -117,3 +117,24 @@ exports.getProfile = async (req, res, next) => {
     next(err);
   }
 };
+
+exports.updateProfile = async (req, res, next) => {
+  const {name , email } = req.body;
+  try {
+    const user = await User.findById(req.user._id);
+    if (!user) {
+      const error = new Error("No user found");
+      error.statusCode = 404;
+      throw error;
+    }
+    user.name = name;
+    user.email = email;
+    await user.save();
+    res.status(201).json({success:true})
+  } catch (error) {
+    if (!err.statusCode) {
+      err.statusCode = 500;
+    }
+    next(err);
+  }
+}
