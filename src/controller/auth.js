@@ -2,6 +2,7 @@ const jwt = require("jsonwebtoken");
 const User = require("../models/User");
 const Doctor = require("../models/Doctor");
 const Identifier = require("../models/doctor_identifier");
+const Review = require("../models/Review");
 const { validationResult } = require("express-validator");
 
 exports.userSignUp = async (req, res, next) => {
@@ -25,6 +26,7 @@ exports.userSignUp = async (req, res, next) => {
       `${process.env.MY_SECRET_WEB_TOKEN_KEY}`
     );
     res.send({ success: true, token });
+    s;
   } catch (err) {
     if (!err.statusCode) {
       err.statusCode = 500;
@@ -71,21 +73,30 @@ exports.doctorSignUp = async (req, res, next) => {
     const doctor = await Doctor.findOne({
       email,
     });
-    const match = await Identifier.findOne({identifier:key,name});
-    if (!match){
-        throw new Error("Only valid doctors can sign up, make sure your identifier and name is correct");
+    const match = await Identifier.findOne({ identifier: key, name });
+    if (!match) {
+      throw new Error(
+        "Only valid doctors can sign up, make sure your identifier and name is correct"
+      );
     }
     if (doctor) {
       throw new Error("Sorry, email is already taken ");
     }
-    const newDoctor = new Doctor({name,password,email,gender,speciality,availability,key});
+    const newDoctor = new Doctor({
+      name,
+      password,
+      email,
+      gender,
+      speciality,
+      availability,
+      key,
+    });
     await newDoctor.save();
     const token = jwt.sign(
-        { docId: newDoctor._id },
-        `${process.env.MY_SECRET_WEB_TOKEN_KEY}`
-      );
-      res.status(200).json({ success: true, token });
-
+      { docId: newDoctor._id },
+      `${process.env.MY_SECRET_WEB_TOKEN_KEY}`
+    );
+    res.status(200).json({ success: true, token });
   } catch (err) {
     if (!err.statusCode) {
       err.statusCode = 500;

@@ -2,7 +2,9 @@ const Appointments = require("../models/Appointment");
 const User = require("../models/User");
 const Doctor = require("../models/Doctor");
 const Appointment = require("../models/Appointment");
+const Review = require("../models/Review");
 const Util = require("../utils/util");
+const { default: mongoose } = require("mongoose");
 
 // get all appointments of specific user
 exports.getAppointments = async (req, res, next) => {
@@ -76,6 +78,7 @@ exports.getAppointment = async (req, res, next) => {
 exports.getDoctors = async (req, res, next) => {
   try {
     const doctors = await Doctor.find().populate("reviews");
+
     if (!doctors) {
       const error = new Error("Something went wrong");
       error.statusCode = 500;
@@ -92,7 +95,7 @@ exports.getDoctors = async (req, res, next) => {
       };
     });
     res.status(201).json({ success: true, data: result });
-  } catch (error) {
+  } catch (err) {
     if (!err.statusCode) {
       err.statusCode = 500;
     }
@@ -119,7 +122,7 @@ exports.getProfile = async (req, res, next) => {
 };
 
 exports.updateProfile = async (req, res, next) => {
-  const {name , email } = req.body;
+  const { name, email } = req.body;
   try {
     const user = await User.findById(req.user._id);
     if (!user) {
@@ -130,11 +133,44 @@ exports.updateProfile = async (req, res, next) => {
     user.name = name;
     user.email = email;
     await user.save();
-    res.status(201).json({success:true})
+    res.status(201).json({ success: true });
   } catch (error) {
-    if (!err.statusCode) {
-      err.statusCode = 500;
+    if (!error.statusCode) {
+      error.statusCode = 500;
     }
-    next(err);
+    next(error);
   }
-}
+};
+
+exports.getTopDoctors = async (req, res, next) => {
+  try {
+    const doctors = await Doctor.find().populate("reviews");
+    if (!doctors) {
+      const error = new Error("Something went wrong");
+      error.statusCode = 500;
+      throw error;
+    }
+
+    const result = doctors
+      .filter((doctor) => {
+        if (Util.calculateTotalRatings(doctor.reviews) > 4) {
+          return doctor;
+        }
+      })
+      .map((results) => {
+        return {
+          speciality: results.speciality,
+          name: results.name,
+          img: results.imageUrl,
+          numberOfVotes: results.reviews.length,
+          rating: Util.calculateTotalRatings(results.reviews),
+        };
+      });
+    res.status(201).json({ success: true, data: result });
+  } catch (error) {
+    if (!error.statusCode) {
+      error.statusCode = 500;
+    }
+    next(error);
+  }
+};
