@@ -7,20 +7,26 @@ const patientController = require("../controller/patientController");
 router.get("/appointments", isAuth, patientController.getAppointments);
 
 // GET ----> get a single appointment
-router.get('/appointment/:appointmentId',isAuth,patientController.getAppointment)
+router.get(
+  "/appointment/:appointmentId",
+  isAuth,
+  patientController.getAppointment
+);
 
 // GET ---> all doctors
-router.get('/doctors',isAuth,patientController.getDoctors);
+router.get("/doctors", isAuth, patientController.getDoctors);
 
 // GET ---> profile
-router.get('/profile',isAuth,patientController.getProfile)
+router.get("/profile", isAuth, patientController.getProfile);
+
+// GET ---> top doctors
+
+router.get("/top-doctors", isAuth, patientController.getTopDoctors);
 
 // POST --> book an appointment
-router.post('/appointment',isAuth)
+router.post("/appointment", isAuth);
 
 //UPDATE  --> profile
-router.put('/profile',isAuth,patientController.updateProfile)
-
-
+router.put("/profile", isAuth, patientController.updateProfile);
 
 module.exports = router;

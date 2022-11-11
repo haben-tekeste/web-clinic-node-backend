@@ -4,7 +4,6 @@ const express = require("express");
 const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
 const authRoute = require("./src/routes/authRoute");
-const homeRoute = require("./src/routes/homeRoute");
 const patientRoute = require("./src/routes/patientRoute");
 const app = express();
 const cors = require("cors");
@@ -17,8 +16,7 @@ app.use(cors());
 app.use(bodyParser.json());
 
 app.use(authRoute);
-app.use('/patient',patientRoute)
-// app.use(homeRoute);
+app.use("/patient", patientRoute);
 
 app.use((error, req, res, next) => {
   console.log("error", error);
