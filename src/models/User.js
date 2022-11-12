@@ -1,10 +1,10 @@
 const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
 const UserSchema = mongoose.Schema({
-  name:{
-    type:String,
-    required:true,
-    trim:true,
+  name: {
+    type: String,
+    required: true,
+    trim: true,
   },
   email: {
     type: String,
@@ -17,12 +17,12 @@ const UserSchema = mongoose.Schema({
     required: true,
     trim: true,
   },
-    appointments:[
-        {
-            type: mongoose.Schema.Types.ObjectId,
-            ref:'Appointment'
-        }
-    ]
+  appointments: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Appointment",
+    },
+  ],
 });
 
 UserSchema.pre("save", function (next) {
