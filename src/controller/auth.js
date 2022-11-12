@@ -66,9 +66,16 @@ exports.doctorSignUp = async (req, res, next) => {
     error.data = errors.array();
     return next(error);
   }
+  if (!req.file) {
+    const error = new Error("Image not provided");
+    error.statusCode = 422;
+    return next(error);
+  }
   try {
     const { name, email, password, speciality, gender, availability, key } =
       req.body;
+    const imageUrl = req.file.path;
+
     const doctor = await Doctor.findOne({
       email,
     });
@@ -89,6 +96,7 @@ exports.doctorSignUp = async (req, res, next) => {
       speciality,
       availability,
       key,
+      imageUrl
     });
     await newDoctor.save();
     const token = jwt.sign(
@@ -104,4 +112,26 @@ exports.doctorSignUp = async (req, res, next) => {
   }
 };
 
-exports.doctorSingIn = async (req, res, next) => {};
+exports.doctorSignIn = async (req, res, next) => {
+  try {
+    const { email, password } = req.body;
+    const doctor = await Doctor.findOne({ email });
+    if (!doctor) {
+      throw new Error("Sorry invalid email ");
+    }
+    const match = await doctor.comparePassword(password);
+    if (!match) {
+      throw new Error("Sorry invalid password");
+    }
+    const token = jwt.sign(
+      { docId: doctor._id },
+      process.env.MY_SECRET_WEB_TOKEN_KEY.toString()
+    );
+    res.send({ success: true, token });
+  } catch (err) {
+    if (!err.statusCode) {
+      err.statusCode = 500;
+    }
+    next(err);
+  }
+};

@@ -34,15 +34,24 @@ router.post(
   [
     body("email").isEmail().normalizeEmail(),
     body("password").isLength({ min: 5 }).trim(),
-    body('key').isLength({min:10,max:10}).withMessage("Invalid identifier"),
+    body("key")
+      .isLength({ min: 10, max: 10 })
+      .withMessage("Invalid identifier"),
     body("name").not().isEmpty(),
-    body('availability').not().isEmpty(),
-    body('speciality').not().isEmpty()
+    body("availability").not().isEmpty(),
+    body("speciality").not().isEmpty(),
   ],
   authController.doctorSignUp
 );
 
 //POST ---> SIGN IN (doctor)
-router.post("/doctor/sign-in");
+router.post(
+  "/doctor/sign-in",
+  [
+    body("email").isEmail().normalizeEmail(),
+    body("password").isLength({ min: 5 }).trim(),
+  ],
+  authController.doctorSignIn
+);
 
 module.exports = router;

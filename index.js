@@ -3,17 +3,52 @@ require("dotenv").config();
 const express = require("express");
 const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
-const authRoute = require("./src/routes/authRoute");
-const patientRoute = require("./src/routes/patientRoute");
 const app = express();
 const cors = require("cors");
+const multer = require('multer');
+
+// 
+const authRoute = require("./src/routes/authRoute");
+const patientRoute = require("./src/routes/patientRoute");
 
 //
 require("dotenv").config();
 
-app.use(cors());
+// file storage for images
+const fileStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "src/images");
+  },
+  filename: (req, file, cb) => {
+    cb(null, new Date().toISOString() + "-" + file.originalname);
+  },
+});
 
+// file types filter for images
+const fileFilter = (req, file, cb) => {
+  // The function should call `cb` with a boolean
+  // to indicate if the file should be accepted
+
+  // To accept the file pass `true`, like so:
+  if (
+    file.mimetype === "image/png" ||
+    file.mimetype === "image/jpg" ||
+    file.mimetype === "image/jpeg"
+  ) {
+    cb(null, true);
+  } else {
+    // To reject this file pass `false`, like so:
+    cb(null, false);
+  }
+};
+
+
+app.use(cors());
 app.use(bodyParser.json());
+app.use("src/images", express.static(path.join(__dirname, "images"))); //serving static images
+app.use(
+  multer({ storage: fileStorage, fileFilter: fileFilter }).single("image")
+);
 
 app.use(authRoute);
 app.use("/patient", patientRoute);
