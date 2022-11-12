@@ -26,6 +26,10 @@ router.get("/top-doctors", isAuth, patientController.getTopDoctors);
 // POST --> book an appointment
 router.post("/appointment", isAuth, patientController.postAppointement);
 
+// Update --> cancel an appointment
+
+router.put("/cancel-appointment", isAuth, patientController.cancelAppointment);
+
 //UPDATE  --> profile
 router.put("/profile", isAuth, patientController.updateProfile);
 

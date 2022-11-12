@@ -6,12 +6,42 @@ const Review = require("../models/Review");
 const Util = require("../utils/util");
 const { default: mongoose } = require("mongoose");
 
+// cancell an appointement
+
+exports.cancelAppointment = async (req, res, next) => {
+  const userId = req.user._id;
+  Util.userExistFromRequest(userId, next);
+  try {
+    const { appointmentId } = req.body;
+    const appointment = await Appointment.findById(appointmentId);
+    const todaysDate = new Date().getTime();
+    const appointmentDate = new Date(appointment.date).getTime();
+    if (appointment.status !== "Cancelled") {
+      if (appointmentDate - todaysDate > 0) {
+        appointment.status = "Cancelled";
+        await appointment.save();
+        res.send({ success: true });
+      } else {
+        Util.errorStatment("You can't cancel an appointment now", next);
+      }
+    } else {
+      Util.errorStatment("appointment already cancelled", next);
+    }
+  } catch (err) {
+    if (!err.statusCode) {
+      err.statusCode = 500;
+    }
+    next(err);
+  }
+};
+
+//post an appointement
 exports.postAppointement = async (req, res, next) => {
   const userId = req.user._id;
-  Util.userExistFromRequest(userId);
+  Util.userExistFromRequest(userId, next);
   try {
-    const { date, startTime, doctorId, patientId } = req.body;
-    const patient = await User.findById(patientId).populate("appointments");
+    const { date, startTime, doctorId } = req.body;
+    const patient = await User.findById(userId).populate("appointments");
     const doctor = await Doctor.findById(doctorId).populate("appointments");
     const booked = patient.appointments.filter((appointment) => {
       const date1 = new Date(date);
@@ -26,7 +56,7 @@ exports.postAppointement = async (req, res, next) => {
         date,
         startTime,
         doctorId,
-        patientId,
+        patientId: userId,
       });
       patient.appointments = [...patient.appointments, appointment._id];
       doctor.appointments = [...doctor.appointments, appointment._id];
@@ -35,9 +65,7 @@ exports.postAppointement = async (req, res, next) => {
       await doctor.save();
       res.send({ success: true, patient });
     } else {
-      const error = new Error("Already booked for the day");
-      error.statusCode = 422;
-      return next(error);
+      Util.errorStatment("Already booked for the day", next);
     }
   } catch (err) {
     if (!err.statusCode) {
@@ -50,7 +78,7 @@ exports.postAppointement = async (req, res, next) => {
 // get all appointments of specific user
 exports.getAppointments = async (req, res, next) => {
   const userId = req.user._id;
-  Util.userExistFromRequest(userId);
+  Util.userExistFromRequest(userId, next);
   try {
     const userAppointments = await Appointments.find({
       patientId: req.user._id,
