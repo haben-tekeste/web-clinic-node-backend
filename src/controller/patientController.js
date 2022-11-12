@@ -22,7 +22,10 @@ exports.cancelAppointment = async (req, res, next) => {
         await appointment.save();
         res.send({ success: true });
       } else {
-        Util.errorStatment("You can't cancel an appointment now", next);
+        Util.errorStatment(
+          "You can't cancel less than 24hrs to the meeting",
+          next
+        );
       }
     } else {
       Util.errorStatment("appointment already cancelled", next);
