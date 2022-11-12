@@ -6,14 +6,51 @@ const Review = require("../models/Review");
 const Util = require("../utils/util");
 const { default: mongoose } = require("mongoose");
 
+exports.postAppointement = async (req, res, next) => {
+  const userId = req.user._id;
+  Util.userExistFromRequest(userId);
+  try {
+    const { date, startTime, doctorId, patientId } = req.body;
+    const patient = await User.findById(patientId).populate("appointments");
+    const doctor = await Doctor.findById(doctorId).populate("appointments");
+    const booked = patient.appointments.filter((appointment) => {
+      const date1 = new Date(date);
+      const date2 = new Date(appointment.date);
+      if (date1.getTime() === date2.getTime()) {
+        return appointment;
+      }
+    });
+
+    if (booked.length === 0) {
+      const appointment = new Appointment({
+        date,
+        startTime,
+        doctorId,
+        patientId,
+      });
+      patient.appointments = [...patient.appointments, appointment._id];
+      doctor.appointments = [...doctor.appointments, appointment._id];
+      await appointment.save();
+      await patient.save();
+      await doctor.save();
+      res.send({ success: true, patient });
+    } else {
+      const error = new Error("Already booked for the day");
+      error.statusCode = 422;
+      return next(error);
+    }
+  } catch (err) {
+    if (!err.statusCode) {
+      err.statusCode = 500;
+    }
+    next(err);
+  }
+};
+
 // get all appointments of specific user
 exports.getAppointments = async (req, res, next) => {
   const userId = req.user._id;
-  if (!userId) {
-    const error = new Error("User not found");
-    error.statusCode = 422;
-    return next(error);
-  }
+  Util.userExistFromRequest(userId);
   try {
     const userAppointments = await Appointments.find({
       patientId: req.user._id,
@@ -153,7 +190,7 @@ exports.getTopDoctors = async (req, res, next) => {
 
     const result = doctors
       .filter((doctor) => {
-        if (Util.calculateTotalRatings(doctor.reviews) > 4) {
+        if (Util.calculateTotalRatings(doctor.reviews) > 4.2) {
           return doctor;
         }
       })

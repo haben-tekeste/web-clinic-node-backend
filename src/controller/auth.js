@@ -26,7 +26,6 @@ exports.userSignUp = async (req, res, next) => {
       `${process.env.MY_SECRET_WEB_TOKEN_KEY}`
     );
     res.send({ success: true, token });
-    s;
   } catch (err) {
     if (!err.statusCode) {
       err.statusCode = 500;
