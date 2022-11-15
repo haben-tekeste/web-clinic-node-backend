@@ -1,5 +1,6 @@
 require("./src/models/User");
 require("dotenv").config();
+const path = require("path");
 const express = require("express");
 const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
