@@ -5,6 +5,7 @@ const Doctor = require('../models/Doctor');
 module.exports = (req,res,next) => {
     try {
         const { authorization } = req.headers;
+        
         if (!authorization) {
           throw new Error("You must Log in first");
         }
@@ -25,6 +26,7 @@ module.exports = (req,res,next) => {
             const { docId } = payload;
             const doctor = await Doctor.findById(docId);
             req.doctor = doctor;
+            
             next();
           }
         );

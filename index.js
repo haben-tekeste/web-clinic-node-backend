@@ -11,7 +11,7 @@ const multer = require('multer');
 // 
 const authRoute = require("./src/routes/authRoute");
 const patientRoute = require("./src/routes/patientRoute");
-
+const doctorRoute = require("./src/routes/doctorRoute")
 //
 require("dotenv").config();
 
@@ -53,6 +53,7 @@ app.use(
 
 app.use(authRoute);
 app.use("/patient", patientRoute);
+app.use("/doctor",doctorRoute);
 
 app.use((error, req, res, next) => {
   console.log("error", error);
