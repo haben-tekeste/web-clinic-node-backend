@@ -7,5 +7,14 @@ const isAuth = require('../middlewares/doctroAuthMiddleware')
 // GET ---> appointments for a specific doctor
 router.get('/appointments',isAuth,doctorController.getAppointments)
 
+// Update ---> appointment status
+router.put('/appointment/:id',isAuth)
+
 // GET ---> profile
 router.get('/profile',isAuth,doctorController.getProfile)
+
+// GET ---> reviews
+router.get('/reviews',isAuth)
+
+// POST ---> prescription
+router.post('/prescription',isAuth)
