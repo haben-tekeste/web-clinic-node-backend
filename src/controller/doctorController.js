@@ -1,5 +1,7 @@
 const Doctor = require("../models/Doctor");
 const Appointment = require("../models/Appointment");
+const Review = require("../models/Review");
+const Prescription = require("../models/Prescription");
 const Util = require("../utils/util");
 
 exports.getAppointments = async (req, res, next) => {
@@ -9,10 +11,12 @@ exports.getAppointments = async (req, res, next) => {
       .exec();
     const result = appointments.map((appt) => {
       return {
+        id: appt._id,
         date: appt.date,
         time: appt.startTime,
         patientName: appt.patientId.name,
         status: appt.status,
+        patientId: appt.patientId._id,
       };
     });
     res.status(200).json(result);
@@ -38,11 +42,12 @@ exports.getTodayAppointments = async (req, res, next) => {
         time: appt.startTime,
         patientName: appt.patientId.name,
         status: appt.status,
+        patientId: appt.patientId._id,
       };
     });
     res.status(200).json(result);
   } catch (error) {
-    console.log(error)
+    console.log(error);
     Util.errorStatment("Could not query appointments", next);
   }
 };
@@ -55,5 +60,63 @@ exports.getProfile = async (req, res, next) => {
     res.status(200).json({ name: name, email: email });
   } catch (error) {
     Util.errorStatment("Profile not found", next);
+  }
+};
+
+exports.getReviews = async (req, res, next) => {
+  try {
+    const reviews = await Review.find({ doctorId: req.doctor._id });
+    const reviews_count = {
+      excellent: 0,
+      good: 0,
+      satisfactory: 0,
+      poor: 0,
+      veryPoor: 0,
+    };
+    reviews.map((review) => {
+      if (review.rating === 5) reviews_count.excellent++;
+      else if (review.rating === 4) reviews_count.good++;
+      else if (review.rating === 3) reviews_count.satisfactory++;
+      else if (review.rating === 2) reviews_count.poor++;
+      else reviews_count.veryPoor++;
+    });
+
+    if (!reviews) {
+      res.status(200).json({});
+      return;
+    }
+    res.status(200).json(reviews_count);
+  } catch (error) {
+    Util.errorStatment("Failed Retrieving Reviews", next);
+  }
+};
+
+exports.writePrescription = async (req, res, next) => {
+  try {
+    const { medicine, dosage, duration, appId, patient } = req.body;
+
+    if (!medicine || !dosage || !duration || !appId || !patient)
+      throw new Error("Please provide neccessary details");
+
+    const prescription = await Prescription.find({ appointmentId: appId });
+    
+    if (prescription.length)
+      throw new Error("Prescription for mentioned appointment already exists");
+
+    const newPrescription = new Prescription({
+      appointmentId: appId,
+      patientId: patient,
+      doctorId: req.doctor._id,
+      medicine,
+      dosage,
+      duration,
+    });
+    await newPrescription.save();
+    res
+      .status(200)
+      .json({ success: true, message: "Prescription successfully created" });
+  } catch (error) {
+    console.log(error)
+    Util.errorStatment("Failed Retrieving Prescriptions", next);
   }
 };

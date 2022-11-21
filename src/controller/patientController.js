@@ -3,6 +3,7 @@ const User = require("../models/User");
 const Doctor = require("../models/Doctor");
 const Appointment = require("../models/Appointment");
 const Review = require("../models/Review");
+const Prescription = require('../models/Prescription')
 const Util = require("../utils/util");
 const { default: mongoose } = require("mongoose");
 
@@ -242,3 +243,36 @@ exports.getTopDoctors = async (req, res, next) => {
     next(error);
   }
 };
+
+exports.getPrescription = async (req, res, next) => {
+  try {
+    const {id} = req.params;
+    console.log(id)
+    const prescription = await Prescription.findOne({appointmentId:id}).populate([{path:'patientId'},{path:'doctorId'}]).exec()
+    
+    if(!prescription) throw new Error("Sorry, no prescription for such patient")
+    const {_id,medicine, dosage, duration, patientId:{name},doctorId,createdAt} = prescription;
+    const medicine_array = medicine.split(',');
+    const dosage_array = dosage.split(',')
+    const duration_array = duration.split(',')
+
+    const prescriptionDetails = medicine_array.map((item,index) => {
+      return {
+        medicine_name: item,
+        medicine_duration: duration_array[index],
+        medicine_dosage:dosage_array[index]
+      }
+    })
+    const data = {
+      number : _id,
+      details:prescriptionDetails,
+      patient: name,
+      doctor: doctorId.name,
+      date:createdAt.toLocaleDateString()
+    }
+    Util.generatePrescription(data); 
+    res.status(200).json(prescriptionDetails)
+  } catch (error) {
+    
+  }
+}

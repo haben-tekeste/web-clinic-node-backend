@@ -17,10 +17,10 @@ router.put('/appointment/:id',isAuth)
 router.get('/profile',isAuth,doctorController.getProfile)
 
 // GET ---> reviews
-router.get('/reviews',isAuth)
+router.get('/reviews',isAuth,doctorController.getReviews)
 
 // POST ---> prescription
-router.post('/prescription',isAuth)
+router.post('/prescription',isAuth,doctorController.writePrescription)
 
 
 module.exports = router;
