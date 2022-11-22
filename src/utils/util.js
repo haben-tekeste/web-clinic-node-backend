@@ -1,4 +1,5 @@
 const PDFDocument = require("pdfkit");
+const path = require('path')
 
 exports.calculateTotalRatings = (reviews) => {
   const ttlRatings = reviews.length;
@@ -23,20 +24,17 @@ exports.errorStatment = (message, next) => {
   return next(error);
 };
 
-exports.generatePrescription = (data) => {
-  let pdf = new PDFDocument();
-
+exports.generatePrescription = (pdf,data) => {
+  
   createHeader(pdf);
-  createPrescriptionIntro(pdf,data);
-  createTable(pdf,data);
-  createFooter(pdf);
-  pdf.end();
-  return pdf;
+  createPrescriptionIntro(pdf, data);
+  createTable(pdf, data);
+  createFooter(pdf,data);
 };
 
 const createHeader = (pdf) => {
   pdf
-    .image("../Logo/hospital.png", 50, 45, { width: 50 })
+    .image(path.join(__dirname,"..","Logo","hospital.png"), 50, 45, { width: 50 })
     .fillColor("#444444")
     .fontSize(20)
     .text("WeCare", 110, 57)
@@ -63,12 +61,13 @@ const createFooter = (pdf, data) => {
 
 const createPrescriptionIntro = (pdf, data) => {
   pdf
-    .text(`Prescription Number: ${data.id.toString()}`, 50, 200)
-    .text(`Prescription Date: ${data.date}`, 50, 215)
+    .text(`Prescription Number:     ${data.number.toString()}`, 50, 200)
+    .text(`Prescription Date:       ${data.date}`, 50, 215)
+    
 
-    .text(data.patient, 300, 200)
-    .text("123 Random Street", 300, 215)
-    .text(`${"Khalifa City"}, ${"AUH"}, ${"UAE"}`, 300, 130)
+    .text(data.patient, 330, 200)
+    .text("123 Random Street", 330, 215)
+    .text(`${"Khalifa City"}, ${"AUH"}, ${"UAE"}`, 330, 230)
     .moveDown();
 };
 
@@ -76,19 +75,13 @@ const createTable = (pdf, data) => {
   let i;
   const invoiceTableTop = 330;
 
-  doc.font("Helvetica-Bold");
-  generateTableRow(
-    doc,
-    invoiceTableTop,
-    "Medicine Name",
-    "Dosage",
-    "Duration"
-  );
+  pdf.font("Helvetica-Bold");
+  generateTableRow(pdf, invoiceTableTop, "Medicine Name", "Dosage", "Duration");
   generateHr(pdf, invoiceTableTop + 20);
   pdf.font("Helvetica");
 
-  for (i = 0; i < data.prescriptionDetails.length; i++) {
-    const item = data.prescriptionDetails[i];
+  for (i = 0; i < data.details.length; i++) {
+    const item = data.details[i];
     const position = invoiceTableTop + (i + 1) * 30;
     generateTableRow(
       pdf,
@@ -106,22 +99,16 @@ const generateHr = (pdf, y) => {
   pdf.strokeColor("#aaaaaa").lineWidth(1).moveTo(50, y).lineTo(550, y).stroke();
 };
 
-const generateTableRow = (
-  pdf,
-  y,
-  name,
-  dosage,
-  duration
-) => {
-
+const generateTableRow = (pdf, y, name, dosage, duration) => {
   let displayed_dosage = "";
-  if (dosage === "3") displayed_dosage = "1 Morning, 1 Aft, 1 Eve"
-  else if (dosage == "2") displayed_dosage = "1 Morning, 1 Eve"
-  else displayed_dosage = "1/2 Morning, 1/2 Evening"
+  if (dosage === "3" ) displayed_dosage = "1 Morning, 1 Aft, 1 Eve";
+  else if (dosage == "2" ) displayed_dosage = "1 Morning, 1 Eve";
+  else if (dosage == "1" ) displayed_dosage = "1/2 Morning, 1/2 Evening"
+  else displayed_dosage = "Dosage"
 
   pdf
     .fontSize(10)
     .text(name, 50, y)
     .text(displayed_dosage, 150, y)
-    .text(duration, 280, y, { width: 90, align: "right" })
+    .text(duration + " days", 280, y, { width: 90, align: "right" });
 };

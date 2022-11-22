@@ -3,8 +3,11 @@ const User = require("../models/User");
 const Doctor = require("../models/Doctor");
 const Appointment = require("../models/Appointment");
 const Review = require("../models/Review");
-const Prescription = require('../models/Prescription')
+const Prescription = require("../models/Prescription");
 const Util = require("../utils/util");
+const fs = require("fs");
+const path = require("path");
+const PDFDocument = require("pdfkit");
 const { default: mongoose } = require("mongoose");
 
 // cancell an appointement
@@ -246,33 +249,61 @@ exports.getTopDoctors = async (req, res, next) => {
 
 exports.getPrescription = async (req, res, next) => {
   try {
-    const {id} = req.params;
-    console.log(id)
-    const prescription = await Prescription.findOne({appointmentId:id}).populate([{path:'patientId'},{path:'doctorId'}]).exec()
-    
-    if(!prescription) throw new Error("Sorry, no prescription for such patient")
-    const {_id,medicine, dosage, duration, patientId:{name},doctorId,createdAt} = prescription;
-    const medicine_array = medicine.split(',');
-    const dosage_array = dosage.split(',')
-    const duration_array = duration.split(',')
+    const { id } = req.params;
 
-    const prescriptionDetails = medicine_array.map((item,index) => {
+    const prescription = await Prescription.findOne({ appointmentId: id })
+      .populate([{ path: "patientId" }, { path: "doctorId" }])
+      .exec();
+    if (!prescription)
+      throw new Error("Sorry, no prescription for such patient");
+    const {
+      _id,
+      medicine,
+      dosage,
+      duration,
+      patientId: { name },
+      doctorId,
+      createdAt,
+    } = prescription;
+    const medicine_array = medicine.split(",");
+    const dosage_array = dosage.split(",");
+    const duration_array = duration.split(",");
+
+    const prescriptionDetails = medicine_array.map((item, index) => {
       return {
         medicine_name: item,
         medicine_duration: duration_array[index],
-        medicine_dosage:dosage_array[index]
-      }
-    })
+        medicine_dosage: dosage_array[index],
+      };
+    });
     const data = {
-      number : _id,
-      details:prescriptionDetails,
+      number: _id,
+      details: prescriptionDetails,
       patient: name,
       doctor: doctorId.name,
-      date:createdAt.toLocaleDateString()
-    }
-    Util.generatePrescription(data); 
-    res.status(200).json(prescriptionDetails)
-  } catch (error) {
+      date: createdAt.toLocaleDateString(),
+    };
     
+    let pdf = new PDFDocument({ size: "A4", margin: 50 });
+    const prescriptionName = "prescription-" + data.number + ".pdf";
+    const filePath = path.join(
+      __dirname,
+      "..",
+      "data",
+      "prescriptions",
+      prescriptionName
+    );
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader(
+      "Content-Disposition",
+      'inline;filename="' + prescriptionName + '"'
+    );
+    pdf.pipe(fs.createWriteStream(filePath));
+    pdf.pipe(res);
+    Util.generatePrescription(pdf, data);
+    pdf.end();
+  } catch (error) {
+    console.log(error);
+    Util.errorStatment("Failed fetching prescriptions", next);
   }
-}
+};
