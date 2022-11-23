@@ -66,14 +66,17 @@ exports.doctorSignUp = async (req, res, next) => {
     error.data = errors.array();
     return next(error);
   }
+  const { name, email, password, speciality, image, key } = req.body;
+  console.log(name, email, password, speciality, image, key);
+
   if (!req.file) {
     const error = new Error("Image not provided");
     error.statusCode = 422;
     return next(error);
   }
   try {
-    const { name, email, password, speciality, gender, availability, key } =
-      req.body;
+    const { name, email, password, speciality, gender, key } = req.body;
+
     const imageUrl = req.file.path;
 
     const doctor = await Doctor.findOne({
@@ -94,9 +97,8 @@ exports.doctorSignUp = async (req, res, next) => {
       email,
       gender,
       speciality,
-      availability,
       key,
-      imageUrl
+      imageUrl,
     });
     await newDoctor.save();
     const token = jwt.sign(
@@ -105,6 +107,7 @@ exports.doctorSignUp = async (req, res, next) => {
     );
     res.status(200).json({ success: true, token });
   } catch (err) {
+    console.log(err);
     if (!err.statusCode) {
       err.statusCode = 500;
     }

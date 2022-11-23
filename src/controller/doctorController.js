@@ -99,7 +99,7 @@ exports.writePrescription = async (req, res, next) => {
       throw new Error("Please provide neccessary details");
 
     const prescription = await Prescription.find({ appointmentId: appId });
-    
+
     if (prescription.length)
       throw new Error("Prescription for mentioned appointment already exists");
 
@@ -116,7 +116,83 @@ exports.writePrescription = async (req, res, next) => {
       .status(200)
       .json({ success: true, message: "Prescription successfully created" });
   } catch (error) {
-    console.log(error)
+    console.log(error);
     Util.errorStatment("Failed Retrieving Prescriptions", next);
+  }
+};
+
+exports.getNearestAppointments = async (req, res, next) => {
+  try {
+    const appointments = await Appointment.find({
+      date: {
+        $gte: new Date(new Date().getTime() + 24 * 60 * 60 * 1000),
+        $lte: new Date(new Date().getTime() + 2 * 24 * 60 * 60 * 1000),
+      },
+      doctorId: req.doctor._id,
+      status: {
+        $ne: "Completed",
+      },
+    })
+      .populate("patientId")
+      .exec();
+    const result = appointments.map((appt) => {
+      return {
+        date: appt.date,
+        time: appt.startTime,
+        patientName: appt.patientId.name,
+        status: appt.status,
+        patientId: appt.patientId._id,
+      };
+    });
+    res.status(200).json(result);
+  } catch (error) {
+    console.log(error);
+    Util.errorStatment("Could not query appointments", next);
+  }
+};
+
+exports.getFutureAppointments = async (req, res, next) => {
+  try {
+    const appointments = await Appointment.find({
+      date: {
+        $gte: new Date(new Date().getTime() + 2 * 24 * 60 * 60 * 1000),
+      },
+      doctorId: req.doctor._id,
+      status: {
+        $ne: "Completed",
+      },
+    })
+      .populate("patientId")
+      .exec();
+    const result = appointments.map((appt) => {
+      return {
+        date: appt.date,
+        time: appt.startTime,
+        patientName: appt.patientId.name,
+        status: appt.status,
+        patientId: appt.patientId._id,
+      };
+    });
+    res.status(200).json(result);
+  } catch (error) {
+    console.log(error);
+    Util.errorStatment("Could not query appointments", next);
+  }
+};
+
+exports.updateAppointmentStatus = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const appointment = await Appointment.findById(id);
+    if (!appointment) throw new Error("No such appointment");
+
+    if (appointment.date >= new Date())
+      throw new Error("Appointment is not completed yet");
+
+    appointment.status = "Completed";
+    await appointment.save();
+    res.status(200).json({ success: true });
+  } catch (error) {
+    Util.errorStatment("Failed Updating Status", next);
   }
 };

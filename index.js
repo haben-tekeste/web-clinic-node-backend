@@ -6,12 +6,12 @@ const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
 const app = express();
 const cors = require("cors");
-const multer = require('multer');
+const multer = require("multer");
 
-// 
+//
 const authRoute = require("./src/routes/authRoute");
 const patientRoute = require("./src/routes/patientRoute");
-const doctorRoute = require("./src/routes/doctorRoute")
+const doctorRoute = require("./src/routes/doctorRoute");
 //
 require("dotenv").config();
 
@@ -43,17 +43,16 @@ const fileFilter = (req, file, cb) => {
   }
 };
 
-
 app.use(cors());
 app.use(bodyParser.json());
-app.use("images", express.static(path.join(__dirname,"src", "images"))); //serving static images
+app.use("images", express.static(path.join(__dirname, "src", "images"))); //serving static images
 app.use(
-  multer({ storage: fileStorage, fileFilter: fileFilter }).single("image")
+  multer({ storage: fileStorage, fileFilter }).single("image")
 );
 
 app.use(authRoute);
 app.use("/patient", patientRoute);
-app.use("/doctor",doctorRoute);
+app.use("/doctor", doctorRoute);
 
 app.use((error, req, res, next) => {
   console.log("error", error);

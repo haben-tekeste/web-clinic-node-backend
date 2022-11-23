@@ -31,16 +31,15 @@ router.post(
 // POST --> SIGN UP (doctor)
 router.post(
   "/doctor/sign-up",
-  [
-    body("email").isEmail().normalizeEmail(),
-    body("password").isLength({ min: 5 }).trim(),
-    body("key")
-      .isLength({ min: 10, max: 10 })
-      .withMessage("Invalid identifier"),
-    body("name").not().isEmpty(),
-    body("availability").not().isEmpty(),
-    body("speciality").not().isEmpty(),
-  ],
+  // [
+  //   body("email").isEmail().normalizeEmail(),
+  //   body("password").isLength({ min: 5 }).trim(),
+  //   body("key")
+  //     .isLength({ min: 10, max: 10 })
+  //     .withMessage("Invalid identifier"),
+  //   body("name").not().isEmpty(),
+  //   body("speciality").not().isEmpty(),
+  // ],
   authController.doctorSignUp
 );
 

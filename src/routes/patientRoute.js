@@ -32,6 +32,8 @@ router.put("/cancel-appointment", isAuth, patientController.cancelAppointment);
 router.put("/profile", isAuth, patientController.updateProfile);
 
 // GET ---> prescription
-router.get('/prescription/:id',patientController.getPrescription)
+router.get("/prescription/:id", isAuth, patientController.getPrescription);
 
+// PUT ---> review
+router.put("/review/:id",isAuth,patientController.writeReview)
 module.exports = router;

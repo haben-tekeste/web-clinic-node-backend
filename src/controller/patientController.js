@@ -283,7 +283,7 @@ exports.getPrescription = async (req, res, next) => {
       doctor: doctorId.name,
       date: createdAt.toLocaleDateString(),
     };
-    
+
     let pdf = new PDFDocument({ size: "A4", margin: 50 });
     const prescriptionName = "prescription-" + data.number + ".pdf";
     const filePath = path.join(
@@ -305,5 +305,24 @@ exports.getPrescription = async (req, res, next) => {
   } catch (error) {
     console.log(error);
     Util.errorStatment("Failed fetching prescriptions", next);
+  }
+};
+
+exports.writeReview = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const { rating } = req.body;
+    if (!rating) throw new Error("No rating provided");
+    const review = await Review.findOne({ doctorId: id, userId: req.user._id });
+    if (review) {
+      review.rating = rating;
+      await review.save()
+      return res.status(200).json({success:true})
+    }
+    const newReview = new Review({rating,userId:req.user._id,doctorId:id})
+    await newReview.save()
+    res.status(200).json({success:true})
+  } catch (error) {
+    Util.errorStatment("Failed to write review")
   }
 };

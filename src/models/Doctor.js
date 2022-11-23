@@ -35,10 +35,12 @@ const DoctorSchema = new mongoose.Schema({
   availability: {
     from: {
       type: String,
+      default:"8:00",
       required: true,
     },
     to: {
       type: String,
+      default:'17:00',
       required: true,
     },
   },

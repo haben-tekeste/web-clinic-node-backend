@@ -10,8 +10,14 @@ router.get('/appointments',isAuth,doctorController.getAppointments)
 // GET ---> appointments for today
 router.get('/today',isAuth,doctorController.getTodayAppointments)
 
+// GET ---> appointments nearest
+router.get('/nearest',isAuth,doctorController.getNearestAppointments)
+
+// GET ---> appointment future
+router.get('/future',isAuth,doctorController.getFutureAppointments);
+
 // Update ---> appointment status
-router.put('/appointment/:id',isAuth)
+router.put('/appointment/:id',isAuth,doctorController.updateAppointmentStatus)
 
 // GET ---> profile
 router.get('/profile',isAuth,doctorController.getProfile)
