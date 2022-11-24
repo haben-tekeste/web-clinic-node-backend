@@ -65,13 +65,17 @@ app.use((error, req, res, next) => {
 const connect = async () => {
   try {
     await mongoose.connect(process.env.MONGO_DB_SECRET_KEY.toString());
-    app.listen(process.env.PORT, () => {
-      console.log("Started");
-    });
+    const httpServer = app.listen(process.env.PORT);
+    const io = require('./socket').init(httpServer);
+    io.on("connection",(socket) => {
+      console.log('connected')
+    })
   } catch (err) {
     console.log(err);
   }
 };
+
+
 
 //connect to database and server
 connect();
