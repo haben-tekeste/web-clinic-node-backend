@@ -66,8 +66,6 @@ exports.doctorSignUp = async (req, res, next) => {
     error.data = errors.array();
     return next(error);
   }
-  const { name, email, password, speciality, image, key } = req.body;
-  console.log(name, email, password, speciality, image, key);
 
   if (!req.file) {
     const error = new Error("Image not provided");
@@ -75,8 +73,7 @@ exports.doctorSignUp = async (req, res, next) => {
     return next(error);
   }
   try {
-    const { name, email, password, speciality, gender, key } = req.body;
-
+    const { name, email, password, speciality, key } = req.body;
     const imageUrl = req.file.path;
 
     const doctor = await Doctor.findOne({
@@ -95,7 +92,6 @@ exports.doctorSignUp = async (req, res, next) => {
       name,
       password,
       email,
-      gender,
       speciality,
       key,
       imageUrl,

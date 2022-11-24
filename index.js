@@ -45,7 +45,7 @@ const fileFilter = (req, file, cb) => {
 
 app.use(cors());
 app.use(bodyParser.json());
-app.use("images", express.static(path.join(__dirname, "src", "images"))); //serving static images
+app.use("/src/images", express.static(path.join(__dirname,"src","images"))); //serving static images
 app.use(
   multer({ storage: fileStorage, fileFilter }).single("image")
 );

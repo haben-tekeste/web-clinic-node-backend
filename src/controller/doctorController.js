@@ -56,8 +56,8 @@ exports.getProfile = async (req, res, next) => {
   try {
     const doctor = await Doctor.findById(req.doctor._id);
     if (!doctor) Util.errorStatment("Doctor not found", next);
-    const { name, email } = doctor;
-    res.status(200).json({ name: name, email: email });
+    const { name, email,imageUrl } = doctor;
+    res.status(200).json({ name, email,imageUrl });
   } catch (error) {
     Util.errorStatment("Profile not found", next);
   }
