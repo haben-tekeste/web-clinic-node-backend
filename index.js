@@ -61,19 +61,30 @@ app.use((error, req, res, next) => {
   res.status(status).json({ message: message });
 });
 
+const httpServer = app.listen(process.env.PORT);
 // creating a connection functions
 const connect = async () => {
   try {
     await mongoose.connect(process.env.MONGO_DB_SECRET_KEY.toString());
-    const httpServer = app.listen(process.env.PORT);
-    const io = require('./socket').init(httpServer);
-    io.on("connection",(socket) => {
-      console.log('connected')
-    })
+    console.log('db connected')
   } catch (err) {
     console.log(err);
   }
 };
+
+const io = require('./socket').init(httpServer);
+io.on("connection",(socket) => {
+  console.log('connected')
+  socket.on('join-room',(roomId) => {
+    socket.join(roomId);
+  })
+  socket.on('send-message',(room,msg) => {
+    // save chat to db
+
+    // broadcast to room
+    socket.to(room).emit('recieve-message',{msg})
+  })
+})
 
 
 
