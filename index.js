@@ -45,10 +45,8 @@ const fileFilter = (req, file, cb) => {
 
 app.use(cors());
 app.use(bodyParser.json());
-app.use("/src/images", express.static(path.join(__dirname,"src","images"))); //serving static images
-app.use(
-  multer({ storage: fileStorage, fileFilter }).single("image")
-);
+app.use("/src/images", express.static(path.join(__dirname, "src", "images"))); //serving static images
+app.use(multer({ storage: fileStorage, fileFilter }).single("image"));
 
 app.use(authRoute);
 app.use("/patient", patientRoute);
@@ -66,27 +64,38 @@ const httpServer = app.listen(process.env.PORT);
 const connect = async () => {
   try {
     await mongoose.connect(process.env.MONGO_DB_SECRET_KEY.toString());
-    console.log('db connected')
+    console.log("db connected");
   } catch (err) {
     console.log(err);
   }
 };
 
-const io = require('./socket').init(httpServer);
-io.on("connection",(socket) => {
-  console.log('connected')
-  socket.on('join-room',(roomId) => {
+const io = require("./socket").init(httpServer);
+io.on("connection", (socket) => {
+  console.log("connected");
+  socket.on("join-room", ({ roomId, name }) => {
+    console.log(roomId, name);
     socket.join(roomId);
-  })
-  socket.on('send-message',(room,msg) => {
+  });
+  socket.on("send-message", ({ room, msg, name }) => {
     // save chat to db
+    const hr =
+      new Date().getHours() < 10
+        ? `0${new Date().getHours()}`
+        : `${new Date().getHours()}`;
+    const min =
+      new Date().getMinutes() < 10
+        ? `0${new Date().getMinutes()}`
+        : `${new Date().getMinutes()}`;
 
+    console.log(hr, min);
+    console.log(room, msg, "sent");
     // broadcast to room
-    socket.to(room).emit('recieve-message',{msg})
-  })
-})
-
-
+    socket.broadcast
+      .to(room)
+      .emit("recieve-message", { msg, time: `${hr}:${min}`, user: name });
+  });
+});
 
 //connect to database and server
 connect();
