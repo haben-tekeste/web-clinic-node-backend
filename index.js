@@ -7,6 +7,7 @@ const bodyParser = require("body-parser");
 const app = express();
 const cors = require("cors");
 const multer = require("multer");
+const Chat = require("./src/models/Chat");
 
 //
 const authRoute = require("./src/routes/authRoute");
@@ -56,7 +57,7 @@ app.use((error, req, res, next) => {
   console.log("error", error);
   const status = error.statusCode || 500;
   const message = error.message;
-  res.status(status).json({ message: message });
+  res.status(status).json({ message });
 });
 
 const httpServer = app.listen(process.env.PORT);
@@ -77,24 +78,28 @@ io.on("connection", (socket) => {
     console.log(roomId, name);
     socket.join(roomId);
   });
-  socket.on("send-message", ({ room, msg, name }) => {
-    // save chat to db
-    const hr =
-      new Date().getHours() < 10
-        ? `0${new Date().getHours()}`
-        : `${new Date().getHours()}`;
-    const min =
-      new Date().getMinutes() < 10
-        ? `0${new Date().getMinutes()}`
-        : `${new Date().getMinutes()}`;
+  socket.on(
+    "send-message",
+    async ({ room, msg, name, doctorId, patientId }) => {
+      // save chat to db
+      const chat = new Chat({ user: name, doctorId, patientId, text: msg });
+      await chat.save();
 
-    console.log(hr, min);
-    console.log(room, msg, "sent");
-    // broadcast to room
-    socket.broadcast
-      .to(room)
-      .emit("recieve-message", { msg, time: `${hr}:${min}`, user: name });
-  });
+      const hr =
+        new Date().getHours() < 10
+          ? `0${new Date().getHours()}`
+          : `${new Date().getHours()}`;
+      const min =
+        new Date().getMinutes() < 10
+          ? `0${new Date().getMinutes()}`
+          : `${new Date().getMinutes()}`;
+
+      // broadcast to room
+      socket.broadcast
+        .to(room)
+        .emit("recieve-message", { msg, time: `${hr}:${min}`, user: name });
+    }
+  );
 });
 
 //connect to database and server

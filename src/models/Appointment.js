@@ -11,7 +11,7 @@ const AppointmentSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    default: "Confirmed",
+    default: "Pending",
   },
   doctorId: {
     type: mongoose.Schema.Types.ObjectId,

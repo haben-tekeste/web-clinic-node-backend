@@ -19,7 +19,9 @@ router.post(
 router.post(
   "/sign-up",
   [
+    body("name").trim().isString().withMessage("Please provide the user name"),
     body("email")
+      .trim()
       .isEmail()
       .normalizeEmail()
       .withMessage("Please Provide valid email"),

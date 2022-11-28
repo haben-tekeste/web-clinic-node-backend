@@ -15,6 +15,9 @@ exports.userSignUp = async (req, res, next) => {
   }
   try {
     const { name, email, password } = req.body;
+    if (!name || !password || !email) {
+      throw new Error("sorry but all fields must be field");
+    }
     const user = await User.findOne({ email });
     if (user) {
       throw new Error("Sorry but the email is already taken");
@@ -39,11 +42,11 @@ exports.userSignIn = async (req, res, next) => {
     const { email, password } = req.body;
     const user = await User.findOne({ email });
     if (!user) {
-      throw new Error("Sorry invalid email ");
+      throw new Error("Sorry invalid email or password");
     }
     const match = await user.comparePassword(password);
     if (!match) {
-      throw new Error("Sorry invalid password");
+      throw new Error("Sorry invalid email or password");
     }
     const token = jwt.sign(
       { userId: user._id },

@@ -12,6 +12,8 @@ router.get(
   isAuth,
   patientController.getAppointment
 );
+// GET ---> single doctor
+router.get("/doctor/:doctorId", isAuth, patientController.getDoctor);
 
 // GET ---> all doctors
 router.get("/doctors", isAuth, patientController.getDoctors);
@@ -32,8 +34,31 @@ router.put("/cancel-appointment", isAuth, patientController.cancelAppointment);
 router.put("/profile", isAuth, patientController.updateProfile);
 
 // GET ---> prescription
-router.get("/prescription/:id", isAuth, patientController.getPrescription);
+router.get("/prescription/:id", patientController.getPrescription);
+
+// GET ---> prescription
+router.get("/check-prescription/:id", patientController.checkPrescription);
+
+// GET ---> cancelled appointments
+
+router.get(
+  "/cancel-appointments",
+  isAuth,
+  patientController.getCancelledAppointments
+);
+
+// GET ---> completed appointments
+
+router.get(
+  "/completed-appointments",
+  isAuth,
+  patientController.getCompletedAppointments
+);
 
 // PUT ---> review
-router.put("/review/:id",isAuth,patientController.writeReview)
+router.put("/review/:id", isAuth, patientController.writeReview);
+
+// GET ---> chat
+router.get("/chat", isAuth, patientController.getChats);
+
 module.exports = router;

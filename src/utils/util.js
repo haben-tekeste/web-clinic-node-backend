@@ -1,5 +1,7 @@
 const PDFDocument = require("pdfkit");
-const path = require('path')
+const path = require("path");
+const Appointment = require("../models/Appointment");
+// const Pateint = require('')
 
 exports.calculateTotalRatings = (reviews) => {
   const ttlRatings = reviews.length;
@@ -24,17 +26,38 @@ exports.errorStatment = (message, next) => {
   return next(error);
 };
 
-exports.generatePrescription = (pdf,data) => {
-  
+exports.checkAppointment = async (req, date, docId, next) => {
+  try {
+    const appointement = await Appointment.find({ doctorId: docId, date });
+    if (appointement.length)
+      return { success: true, msg: "Doctor is already booked at this slot" };
+    const bookedPatient = await Appointment.find({
+      patientId: req.user._id,
+      date,
+    });
+    if (bookedPatient.length)
+      return {
+        success: true,
+        msg: "You already have appointment at this time",
+      };
+    return { success: false, msg: null };
+  } catch (error) {
+    this.errorStatment("Failed db operation", next);
+  }
+};
+
+exports.generatePrescription = (pdf, data) => {
   createHeader(pdf);
   createPrescriptionIntro(pdf, data);
   createTable(pdf, data);
-  createFooter(pdf,data);
+  createFooter(pdf, data);
 };
 
 const createHeader = (pdf) => {
   pdf
-    .image(path.join(__dirname,"..","Logo","hospital.png"), 50, 45, { width: 50 })
+    .image(path.join(__dirname, "..", "Logo", "hospital.png"), 50, 45, {
+      width: 50,
+    })
     .fillColor("#444444")
     .fontSize(20)
     .text("WeCare", 110, 57)
@@ -63,7 +86,6 @@ const createPrescriptionIntro = (pdf, data) => {
   pdf
     .text(`Prescription Number:     ${data.number.toString()}`, 50, 200)
     .text(`Prescription Date:       ${data.date}`, 50, 215)
-    
 
     .text(data.patient, 330, 200)
     .text("123 Random Street", 330, 215)
@@ -101,10 +123,10 @@ const generateHr = (pdf, y) => {
 
 const generateTableRow = (pdf, y, name, dosage, duration) => {
   let displayed_dosage = "";
-  if (dosage === "3" ) displayed_dosage = "1 Morning, 1 Aft, 1 Eve";
-  else if (dosage == "2" ) displayed_dosage = "1 Morning, 1 Eve";
-  else if (dosage == "1" ) displayed_dosage = "1/2 Morning, 1/2 Evening"
-  else displayed_dosage = "Dosage"
+  if (dosage === "3") displayed_dosage = "1 Morning, 1 Aft, 1 Eve";
+  else if (dosage == "2") displayed_dosage = "1 Morning, 1 Eve";
+  else if (dosage == "1") displayed_dosage = "1/2 Morning, 1/2 Evening";
+  else displayed_dosage = "Dosage";
 
   pdf
     .fontSize(10)
