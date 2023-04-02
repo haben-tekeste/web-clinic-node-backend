@@ -6,8 +6,6 @@
 //
 .env
 
-# testing
-/coverage
 
 # production
 /build
